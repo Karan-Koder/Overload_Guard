@@ -34,7 +34,7 @@ export function createSeed(now = new Date()): StoreState {
 export function demoItems(date: string): WorkItem[] {
   return [
     { id: 'demo-assignment', title: 'DAA problem set', source: 'classroom', category: 'assignment', kind: 'deadline', due: at(date, 18), movable: false, priority: 2 },
-    { id: 'demo-project', title: 'Project proposal submission', source: 'gmail', category: 'project', kind: 'deadline', due: at(date, 20), movable: false, priority: 1, rawText: 'Please submit your project proposal by Thursday at 8 PM.' },
+    { id: 'demo-project', title: 'Project proposal submission', source: 'gmail', category: 'project', kind: 'deadline', due: at(date, 20), movable: true, priority: 2, owner: { name: 'Prof. Mehta', email: 'mehta@college.example' }, rawText: 'Please submit your project proposal by Thursday at 8 PM.' },
     { id: 'demo-meeting', title: 'Hackathon team sync', source: 'calendar', category: 'meeting', kind: 'event', start: at(date, 14), end: at(date, 16), movable: true, priority: 3, owner: { name: 'Team lead', email: 'team@campus.example' } },
   ];
 }

@@ -5,7 +5,7 @@ const allowed: Record<string, Tier> = {
 };
 export interface Proposal { type: string; origin?: 'trusted' | 'untrusted'; tier?: Tier }
 export function evaluate(proposal: Proposal): { allowed: boolean; tier: Tier; requiresApproval: boolean; reason: string } {
-  const tier = allowed[proposal.type];
+  const tier = Object.hasOwn(allowed, proposal.type) ? allowed[proposal.type] : undefined;
   if (!tier || proposal.origin === 'untrusted') return { allowed: false, tier: 'red', requiresApproval: false, reason: 'Blocked by policy: unknown, destructive, sending, invite, or untrusted-content action.' };
   return { allowed: true, tier, requiresApproval: tier === 'amber', reason: tier === 'green' ? 'Reversible local action; log and offer Undo.' : 'Explicit user approval required; draft or proposal only.' };
 }
