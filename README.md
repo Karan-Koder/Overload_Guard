@@ -2,7 +2,7 @@
 
 **Other tools fit more work into your week. Overload Guard tells you when it’s too much — and helps you say no.**
 
-A working Phase A prototype for wHACKiest 2026, Track 1: **Make MCP Matter**. Built for Ananya, a second-year engineering student balancing classes, evaluations, lab records, projects and club work.
+A working Phase A prototype for wHACKiest 2026, Track 1: **Make MCP Matter**. Built for John, a second-year engineering student balancing classes, evaluations, lab records, projects and club work.
 
 ## Run locally
 
