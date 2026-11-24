@@ -45,7 +45,11 @@ A calendar shows when you are busy. It rarely connects exam prep, a lab-record d
 
 ### Screenshots
 
-Screenshots from the running prototype are stored under `docs/screenshots/` when captured. The live interface and demo flow are the source of truth; see `docs/DEMO.md` for the presentation script.
+Captured from the running prototype. See `docs/DEMO.md` for the presentation script and `docs/VERIFICATION.md` for the checks performed.
+
+![Calculated workload and lighter-week preview](docs/screenshots/preview.jpg)
+
+[Full dashboard](docs/screenshots/dashboard.jpg) · [Mobile layout](docs/screenshots/mobile.jpg)
 
 ## Features
 
@@ -135,14 +139,14 @@ If your client does not support `cwd`, use this fully absolute command instead:
 }
 ```
 
-| Tool | Inputs | Result / policy |
-| --- | --- | --- |
-| `list_calendar_events` | `from`, `to` (YYYY-MM-DD, inclusive IST) | Calendar events; untrusted descriptions |
-| `list_classroom_coursework` | `from`, `to` | Classroom deadlines |
-| `search_deadline_emails` | `from`, `to` | Email data with `untrusted: true` and security flags |
-| `create_calendar_block` | `date`, `start`, `end` (HH:mm), `title` | Green local recovery block, audit entry, Undo; rejects overlaps |
-| `create_gmail_draft` | `to`, `subject`, `body` | Amber draft queued in the Approval inbox; never sent |
-| `propose_event_move` | `eventId`, `newStart`, `newEnd` (offset ISO datetimes) | Amber proposal; original event unchanged; rejects conflicts |
+| Tool                        | Inputs                                                 | Result / policy                                                 |
+| --------------------------- | ------------------------------------------------------ | --------------------------------------------------------------- |
+| `list_calendar_events`      | `from`, `to` (YYYY-MM-DD, inclusive IST)               | Calendar events; untrusted descriptions                         |
+| `list_classroom_coursework` | `from`, `to`                                           | Classroom deadlines                                             |
+| `search_deadline_emails`    | `from`, `to`                                           | Email data with `untrusted: true` and security flags            |
+| `create_calendar_block`     | `date`, `start`, `end` (HH:mm), `title`                | Green local recovery block, audit entry, Undo; rejects overlaps |
+| `create_gmail_draft`        | `to`, `subject`, `body`                                | Amber draft queued in the Approval inbox; never sent            |
+| `propose_event_move`        | `eventId`, `newStart`, `newEnd` (offset ISO datetimes) | Amber proposal; original event unchanged; rejects conflicts     |
 
 **There is no send-email, accept-invite, decline-invite or delete tool.** MCP draft creation queues approval before any draft is marked ready. Read tools respect source toggles.
 
@@ -160,15 +164,15 @@ $env:MCP_SHARED_TEST = '1'
 npm run test:mcp
 ```
 
-This adds a clearly named local smoke-test draft. Reset the demo afterward.
+Run this from a freshly reset demo. It adds clearly named smoke-test drafts, a recovery block and a meeting proposal. Reset the demo afterward.
 
 ## Security model
 
-| Tier | Behaviour |
-| --- | --- |
-| Green | Explicit allowlist of reversible local actions. Recovery blocks are logged and offer Undo. |
+| Tier  | Behaviour                                                                                                                                |
+| ----- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| Green | Explicit allowlist of reversible local actions. Recovery blocks are logged and offer Undo.                                               |
 | Amber | Draft or proposal only, queued for user review. Approval stores a local prototype result; it never sends email or edits an actual event. |
-| Red | Sending, invite responses, destructive agent actions, unknown tools, and instructions originating in untrusted content are rejected. |
+| Red   | Sending, invite responses, destructive agent actions, unknown tools, and instructions originating in untrusted content are rejected.     |
 
 Policy derives the tier from trusted code, not a caller-supplied tier. Unit tests include red actions falsely labelled green, explicit approval of forbidden actions, and object-property allowlist bypass attempts. User-triggered data deletion is a separate UI/API operation, absent from MCP. The delete-all flow asks for an explicit confirmation, clears the entire store, and does not silently reseed.
 
@@ -178,12 +182,12 @@ Mutating HTTP endpoints check request origin/fetch metadata; the app binds to lo
 
 ### Planned Google scopes
 
-| Scope | Why needed / limitation |
-| --- | --- |
-| `calendar.events` | Read events and create recovery blocks. This is broader than read-only; application code must constrain writes to approved/reversible operations. |
-| `gmail.readonly` | Read deadline messages and sent timestamps. |
-| `gmail.compose` | Create drafts. **Google’s scope also permits sending**; it is not technically a drafts-only OAuth scope. Our application must continue to expose no send method. |
-| `classroom.coursework.me.readonly` | Read the signed-in student’s coursework deadlines. |
+| Scope                              | Why needed / limitation                                                                                                                                          |
+| ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `calendar.events`                  | Read events and create recovery blocks. This is broader than read-only; application code must constrain writes to approved/reversible operations.                |
+| `gmail.readonly`                   | Read deadline messages and sent timestamps.                                                                                                                      |
+| `gmail.compose`                    | Create drafts. **Google’s scope also permits sending**; it is not technically a drafts-only OAuth scope. Our application must continue to expose no send method. |
+| `classroom.coursework.me.readonly` | Read the signed-in student’s coursework deadlines.                                                                                                               |
 
 No OAuth scopes are requested by this prototype.
 
@@ -197,14 +201,14 @@ Set both `ELEVENLABS_API_KEY` and `ELEVENLABS_VOICE_ID` to use server-side `elev
 
 ## Phase A versus Phase B
 
-| Working now | Planned for the hack day |
-| --- | --- |
-| Relative-date sample Calendar, Gmail and Classroom data | Google OAuth and API-backed source adapters |
-| Deterministic scoring and constrained proposal planner | Scheduled agent orchestration and live scans |
-| In-memory approval inbox and audit log | DynamoDB storage with durable user isolation and transactions |
-| Server-side ElevenLabs adapter, browser voice fallback | Kannada/Hindi generation and live provider validation |
-| Real stdio MCP tools sharing local app state | OAuth-authenticated remote MCP deployment |
-| Mock drafts; optional OpenAI/Anthropic prose adapters | Bedrock Converse adapter, IAM and AWS deployment |
+| Working now                                             | Planned for the hack day                                      |
+| ------------------------------------------------------- | ------------------------------------------------------------- |
+| Relative-date sample Calendar, Gmail and Classroom data | Google OAuth and API-backed source adapters                   |
+| Deterministic scoring and constrained proposal planner  | Scheduled agent orchestration and live scans                  |
+| In-memory approval inbox and audit log                  | DynamoDB storage with durable user isolation and transactions |
+| Server-side ElevenLabs adapter, browser voice fallback  | Kannada/Hindi generation and live provider validation         |
+| Real stdio MCP tools sharing local app state            | OAuth-authenticated remote MCP deployment                     |
+| Mock drafts; optional OpenAI/Anthropic prose adapters   | Bedrock Converse adapter, IAM and AWS deployment              |
 
 See `infra/README.md`. The engine and policy have no framework or provider dependency, so live source data uses the same deterministic logic. Moving the synchronous Phase A memory transaction boundary to a network database will require an asynchronous repository implementation and awaiting it in the application service; no scoring or UI logic needs to be rewritten.
 

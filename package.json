@@ -12,7 +12,9 @@
     "typecheck": "tsc --noEmit",
     "mcp": "tsx mcp/workload-server/index.ts",
     "test:mcp": "tsx scripts/check-mcp.ts",
-    "test:api": "tsx scripts/check-api.ts"
+    "test:api": "tsx scripts/check-api.ts",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.26.0",
@@ -27,6 +29,7 @@
     "@types/node": "^24.0.0",
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
+    "prettier": "^3.10.1",
     "tailwindcss": "^4.1.0",
     "tsx": "^4.20.0",
     "typescript": "^5.9.0",

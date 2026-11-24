@@ -5,8 +5,142 @@ import type { Suggestion } from '@/lib/types';
 import { useApp } from './AppProvider';
 import { dateKey, prettyDate } from '@/lib/dates';
 export function DraftEditor({ suggestion: s }: { suggestion: Suggestion }) {
-  const { busy, mutate } = useApp(); const [draft, setDraft] = useState(s.draft); const [editing, setEditing] = useState(false);
-  const pending = s.status === 'awaiting_approval'; const Icon = s.draft ? Mail : CalendarClock;
-  const submit = (action: 'approve' | 'reject' | 'edit') => { void mutate(`/api/actions/${s.id}`, { action, ...(draft && action !== 'reject' ? { draft } : {}) }).then(ok => { if (ok) setEditing(false); }); };
-  return <article className="panel draft-card" id={s.id}><div className="draft-heading"><span className="suggestion-icon amber"><Icon size={21} /></span><div><span className="eyebrow">{s.draft ? 'EMAIL DRAFT' : 'MEETING PROPOSAL'}</span><h2>{s.title}</h2></div><span className={`badge ${s.status === 'approved' ? 'green' : s.status === 'rejected' ? 'neutral' : 'amber'}`}>{s.status.replaceAll('_', ' ')}</span></div><p className="draft-explanation">{s.explanation}</p>{draft ? <div className="email-editor"><label><span>To</span><input aria-label={`Recipient for ${s.title}`} type="email" value={draft.to} readOnly={!editing || !pending} onChange={e => setDraft({ ...draft, to: e.target.value })} /></label><label><span>Subject</span><input aria-label={`Subject for ${s.title}`} maxLength={300} value={draft.subject} readOnly={!editing || !pending} onChange={e => setDraft({ ...draft, subject: e.target.value })} /></label><label className="body-label"><span className="sr-only">Email body for {s.title}</span><textarea aria-label={`Email body for ${s.title}`} value={draft.body} readOnly={!editing || !pending} maxLength={8000} rows={9} onChange={e => setDraft({ ...draft, body: e.target.value })} /></label></div> : <div className="meeting-proposal"><CalendarClock size={27} /><div><span className="eyebrow">PROPOSED NEW TIME</span><h3>{s.proposedStart && prettyDate(dateKey(s.proposedStart))}</h3><p>{s.proposedStart && new Intl.DateTimeFormat('en-IN', { timeZone: 'Asia/Kolkata', hour: 'numeric', minute: '2-digit' }).format(new Date(s.proposedStart))} – {s.proposedEnd && new Intl.DateTimeFormat('en-IN', { timeZone: 'Asia/Kolkata', hour: 'numeric', minute: '2-digit' }).format(new Date(s.proposedEnd))} IST</p><p className="muted">Approval saves a local proposal. The organiser must agree before the event changes.</p></div></div>}<div className="draft-actions"><span className="draft-safety"><ShieldCheck size={15} />{s.draft ? 'Draft only. We never send emails.' : 'Proposal only. We never move real events.'}</span>{pending && <div>{draft && <button className="button" disabled={busy} onClick={() => editing ? submit('edit') : setEditing(true)}>{editing ? <Save size={15} /> : <PencilLine size={15} />}{editing ? 'Save edits' : 'Edit draft'}</button>}<button className="button" disabled={busy} onClick={() => submit('reject')}><X size={16} />Reject</button><button className="button primary" disabled={busy || (draft !== undefined && (!draft.to || !draft.subject.trim() || !draft.body.trim()))} onClick={() => submit('approve')}><Check size={16} />Approve {s.draft ? 'draft' : 'proposal'}</button></div>}{!pending && <span className="muted">{s.status === 'approved' ? 'Approved and saved locally. Nothing sent.' : 'Rejected. No change made.'}</span>}</div></article>;
+  const { busy, mutate } = useApp();
+  const [draft, setDraft] = useState(s.draft);
+  const [editing, setEditing] = useState(false);
+  const pending = s.status === 'awaiting_approval';
+  const Icon = s.draft ? Mail : CalendarClock;
+  const submit = (action: 'approve' | 'reject' | 'edit') => {
+    void mutate(`/api/actions/${s.id}`, {
+      action,
+      ...(draft && action !== 'reject' ? { draft } : {}),
+    }).then((ok) => {
+      if (ok) setEditing(false);
+    });
+  };
+  return (
+    <article className="panel draft-card" id={s.id}>
+      <div className="draft-heading">
+        <span className="suggestion-icon amber">
+          <Icon size={21} />
+        </span>
+        <div>
+          <span className="eyebrow">{s.draft ? 'EMAIL DRAFT' : 'MEETING PROPOSAL'}</span>
+          <h2>{s.title}</h2>
+        </div>
+        <span
+          className={`badge ${s.status === 'approved' ? 'green' : s.status === 'rejected' ? 'neutral' : 'amber'}`}
+        >
+          {s.status.replaceAll('_', ' ')}
+        </span>
+      </div>
+      <p className="draft-explanation">{s.explanation}</p>
+      {draft ? (
+        <div className="email-editor">
+          <label>
+            <span>To</span>
+            <input
+              aria-label={`Recipient for ${s.title}`}
+              type="email"
+              value={draft.to}
+              readOnly={!editing || !pending}
+              onChange={(e) => setDraft({ ...draft, to: e.target.value })}
+            />
+          </label>
+          <label>
+            <span>Subject</span>
+            <input
+              aria-label={`Subject for ${s.title}`}
+              maxLength={300}
+              value={draft.subject}
+              readOnly={!editing || !pending}
+              onChange={(e) => setDraft({ ...draft, subject: e.target.value })}
+            />
+          </label>
+          <label className="body-label">
+            <span className="sr-only">Email body for {s.title}</span>
+            <textarea
+              aria-label={`Email body for ${s.title}`}
+              value={draft.body}
+              readOnly={!editing || !pending}
+              maxLength={8000}
+              rows={9}
+              onChange={(e) => setDraft({ ...draft, body: e.target.value })}
+            />
+          </label>
+        </div>
+      ) : (
+        <div className="meeting-proposal">
+          <CalendarClock size={27} />
+          <div>
+            <span className="eyebrow">PROPOSED NEW TIME</span>
+            <h3>{s.proposedStart && prettyDate(dateKey(s.proposedStart))}</h3>
+            <p>
+              {s.proposedStart &&
+                new Intl.DateTimeFormat('en-IN', {
+                  timeZone: 'Asia/Kolkata',
+                  hour: 'numeric',
+                  minute: '2-digit',
+                }).format(new Date(s.proposedStart))}{' '}
+              –{' '}
+              {s.proposedEnd &&
+                new Intl.DateTimeFormat('en-IN', {
+                  timeZone: 'Asia/Kolkata',
+                  hour: 'numeric',
+                  minute: '2-digit',
+                }).format(new Date(s.proposedEnd))}{' '}
+              IST
+            </p>
+            <p className="muted">
+              Approval saves a local proposal. The organiser must agree before the event changes.
+            </p>
+          </div>
+        </div>
+      )}
+      <div className="draft-actions">
+        <span className="draft-safety">
+          <ShieldCheck size={15} />
+          {s.draft
+            ? 'Draft only. We never send emails.'
+            : 'Proposal only. We never move real events.'}
+        </span>
+        {pending && (
+          <div>
+            {draft && (
+              <button
+                className="button"
+                disabled={busy}
+                onClick={() => (editing ? submit('edit') : setEditing(true))}
+              >
+                {editing ? <Save size={15} /> : <PencilLine size={15} />}
+                {editing ? 'Save edits' : 'Edit draft'}
+              </button>
+            )}
+            <button className="button" disabled={busy} onClick={() => submit('reject')}>
+              <X size={16} />
+              Reject
+            </button>
+            <button
+              className="button primary"
+              disabled={
+                busy ||
+                (draft !== undefined && (!draft.to || !draft.subject.trim() || !draft.body.trim()))
+              }
+              onClick={() => submit('approve')}
+            >
+              <Check size={16} />
+              Approve {s.draft ? 'draft' : 'proposal'}
+            </button>
+          </div>
+        )}
+        {!pending && (
+          <span className="muted">
+            {s.status === 'approved'
+              ? 'Approved and saved locally. Nothing sent.'
+              : 'Rejected. No change made.'}
+          </span>
+        )}
+      </div>
+    </article>
+  );
 }

@@ -1,7 +1,21 @@
 'use client';
 import Link from 'next/link';
 import { useState } from 'react';
-import { Activity, BookOpen, CalendarDays, CheckCheck, ChevronRight, Coffee, Inbox, Mail, Plus, RotateCcw, ShieldCheck, Sparkles, TrendingDown } from 'lucide-react';
+import {
+  Activity,
+  BookOpen,
+  CalendarDays,
+  CheckCheck,
+  ChevronRight,
+  Coffee,
+  Inbox,
+  Mail,
+  Plus,
+  RotateCcw,
+  ShieldCheck,
+  Sparkles,
+  TrendingDown,
+} from 'lucide-react';
 import { useApp } from '@/components/AppProvider';
 import { Timeline } from '@/components/Timeline';
 import { ScoreBadge } from '@/components/ScoreBadge';
@@ -11,22 +25,314 @@ import { InjectionBanner } from '@/components/InjectionBanner';
 import { VoiceButton } from '@/components/VoiceButton';
 import { dateKey, prettyDate } from '@/lib/dates';
 export default function Dashboard() {
-  const { data, busy, mutate } = useApp(); const [selected, setSelected] = useState<string | null>(null);
+  const { data, busy, mutate } = useApp();
+  const [selected, setSelected] = useState<string | null>(null);
   if (!data) return null;
-  const day = data.scores.find(d => d.date === selected) ?? data.scores.find(d => d.date === data.demoDate) ?? data.scores[0];
-  const overloaded = data.scores.filter(d => d.band === 'red').length; const busyDays = data.scores.filter(d => d.band === 'amber').length;
-  const pending = data.suggestions.filter(s => s.status === 'awaiting_approval').length;
-  const protectedSlots = data.suggestions.filter(s => s.status === 'auto_applied').length;
-  const suggestions = data.suggestions.filter(s => s.date === day.date);
+  const day =
+    data.scores.find((d) => d.date === selected) ??
+    data.scores.find((d) => d.date === data.demoDate) ??
+    data.scores[0];
+  const overloaded = data.scores.filter((d) => d.band === 'red').length;
+  const busyDays = data.scores.filter((d) => d.band === 'amber').length;
+  const pending = data.suggestions.filter((s) => s.status === 'awaiting_approval').length;
+  const protectedSlots = data.suggestions.filter((s) => s.status === 'auto_applied').length;
+  const protectedHours = data.items
+    .filter((item) => item.recovery && item.start && item.end)
+    .reduce(
+      (hours, item) => hours + (Date.parse(item.end!) - Date.parse(item.start!)) / 3600000,
+      0,
+    );
+  const suggestions = data.suggestions.filter((s) => s.date === day.date);
   const projection = data.projections[day.date];
-  const items = data.items.filter(i => (i.source === 'manual' || data.settings.connected[i.source]) && ((i.due && dateKey(i.due) === day.date) || (i.start && dateKey(i.start) === day.date)));
-  return <div className="page dashboard-page"><div className="page-heading"><div><span className="eyebrow">A CLEARER PICTURE. A CALMER WEEK.</span><h1>Your week, with room to breathe.</h1><p>Hey {data.student || 'there'}, let’s make space for what matters.</p></div><span className="date-range"><CalendarDays size={16} />{prettyDate(data.startDate, true)} – {prettyDate(data.scores[13].date, true)}</span></div>
-    <section className={`week-banner ${overloaded ? 'heavy' : ''}`}><div className="banner-icon">{overloaded ? <Activity size={25} /> : <ShieldCheck size={27} />}</div><div className="banner-copy"><span className="eyebrow">YOUR NEXT 14 DAYS</span><h2>{data.deleted ? 'A fresh start, whenever you’re ready.' : overloaded ? `${prettyDate(data.demoDate).split(',')[0]} is getting a little too full.` : 'You’re doing a lot. Let’s keep it manageable.'}</h2><p>{overloaded} overloaded {overloaded === 1 ? 'day' : 'days'} · {busyDays} busy {busyDays === 1 ? 'day' : 'days'}{overloaded ? ' · A few small changes can make a big difference.' : ' · We’ll flag the pressure before it builds.'}</p></div><VoiceButton /></section>
-    <div className="stat-grid"><div className="stat-card"><span className="stat-icon amber"><Activity size={19} /></span><div><span>Needs a little attention</span><strong>{overloaded + busyDays}<small>days ahead</small></strong></div><span className="stat-tag">Next 14 days</span></div><div className="stat-card"><span className="stat-icon green"><Coffee size={19} /></span><div><span>Recovery time protected</span><strong>{protectedSlots * 2}<small>hours</small></strong></div><span className="stat-tag">{protectedSlots ? 'Auto + Undo' : 'Room to recharge'}</span></div><Link href="/inbox" className="stat-card stat-link"><span className="stat-icon blue"><Inbox size={19} /></span><div><span>Waiting for your say</span><strong>{pending}<small>{pending === 1 ? 'suggestion' : 'suggestions'}</small></strong></div><ChevronRight size={19} /></Link></div>
-    <div className="dashboard-columns"><div className="overview-main"><section className="panel timeline-panel"><div className="panel-heading"><div><h2>Your workload outlook <span className="subtle-pill">14 days</span></h2><p>A score for your schedule, with a reason behind every point.</p></div><div className="demo-controls"><button className="icon-button" title="Reset demo" aria-label="Reset demo" disabled={busy} onClick={() => { void mutate('/api/reset'); setSelected(null); }}><RotateCcw size={17} /></button><button className="button primary" disabled={busy || data.demoAdded || data.deleted} onClick={() => { setSelected(data.demoDate); void mutate('/api/items', { demo: true }); }}><Plus size={16} />{data.demoAdded ? 'Demo load added' : 'Add demo load'}</button></div></div><div className="legend"><span><i className="green" />Manageable <b>0–39</b></span><span><i className="amber" />Busy <b>40–69</b></span><span><i className="red" />Overloaded <b>70–100</b></span></div><Timeline scores={data.scores} selected={day.date} onSelect={setSelected} demoDate={data.demoDate} /><div className="timeline-caption"><Sparkles size={14} /><span>{data.demoAdded ? 'New commitments detected. Your plan below can help make room.' : 'Try “Add demo load” to see how three new commitments change Thursday.'}</span><span className="timezone-label">All times IST</span></div></section>
-    <section className="panel suggestions-panel"><div className="panel-heading"><div><span className="eyebrow">SMALL CHANGES, MORE SPACE</span><h2>Your lighter-week plan</h2></div><span className="subtle-pill">{suggestions.length} suggestions</span></div>{projection && <div className="projection"><span className="projection-icon"><TrendingDown size={21} /></span><div><strong>A little less on your plate.</strong><p>If extensions are granted and the meeting move is accepted:</p></div><div className="projection-score"><span>{projection.before}</span><ChevronRight size={20} /><b>{projection.after}</b></div><span className="projection-day">{prettyDate(day.date, true)}</span></div>}{suggestions.length ? <div className="suggestions-list">{suggestions.map(s => <SuggestionCard key={s.id} suggestion={s} />)}</div> : <div className="calm-empty"><span><CheckCheck size={27} /></span><h3>A little breathing room.</h3><p>{data.deleted ? 'Reset the demo to restore sample data.' : 'No changes needed for this day. When the load builds, your suggestions will appear here.'}</p></div>}<div className="policy-footnote"><ShieldCheck size={15} /><span>Recovery blocks are reversible. Every draft and meeting proposal waits for you.</span></div></section>
-    {data.items.filter(i => i.flagged).map(i => <InjectionBanner key={i.id} item={i} />)}</div>
-    <aside className="day-panel panel" aria-label="Selected day details"><div className="day-detail-heading"><span className="eyebrow">A CLOSER LOOK</span><h2>{prettyDate(day.date)}</h2><div className="day-score-row"><strong className={`large-score ${day.band}`}>{day.score}<small>/100</small></strong><ScoreBadge band={day.band} /></div></div><div className="day-detail-section"><h3>Why this score <span>{day.reasons.length} reasons</span></h3><ReasonList reasons={day.reasons} /><div className="score-total"><span>Total workload score</span><strong>{day.score}</strong></div></div><div className="day-detail-section"><h3>On your plate <span>{items.length} items</span></h3><ul className="item-list">{items.map(i => { const Icon = i.source === 'gmail' ? Mail : i.source === 'classroom' ? BookOpen : i.recovery ? Coffee : CalendarDays; return <li key={i.id}><span className={`item-icon ${i.source}`}><Icon size={15} /></span><div><strong>{i.title}</strong><small>{i.recovery ? 'Protected recovery' : i.source === 'classroom' ? 'Classroom' : i.source === 'gmail' ? 'Gmail' : 'Calendar'} · {new Intl.DateTimeFormat('en-IN', { timeZone: 'Asia/Kolkata', hour: 'numeric', minute: '2-digit' }).format(new Date(i.due || i.start!))}{i.movable ? ' · Flexible' : ''}</small></div></li>; })}{!items.length && <li className="muted">No commitments scheduled.</li>}</ul></div><div className="explain-note"><BookOpen size={16} /><p>Scored from deadlines, prep time, scheduled hours, breaks and late nights. <Link href="/settings">About your data</Link></p></div></aside></div>
-    <div className="dashboard-bottom"><span><span className="tiny-shield"><ShieldCheck size={15} /></span>Built to help you say “not right now.”</span><span>{data.provider} · Sample data only · No API keys needed</span></div>
-  </div>;
+  const items = data.items.filter(
+    (i) =>
+      (i.source === 'manual' || data.settings.connected[i.source]) &&
+      ((i.due && dateKey(i.due) === day.date) || (i.start && dateKey(i.start) === day.date)),
+  );
+  return (
+    <div className="page dashboard-page">
+      <div className="page-heading">
+        <div>
+          <span className="eyebrow">A CLEARER PICTURE. A CALMER WEEK.</span>
+          <h1>Your week, with room to breathe.</h1>
+          <p>Hey {data.student || 'there'}, let’s make space for what matters.</p>
+        </div>
+        <span className="date-range">
+          <CalendarDays size={16} />
+          {prettyDate(data.startDate, true)} – {prettyDate(data.scores[13].date, true)}
+        </span>
+      </div>
+      <section className={`week-banner ${overloaded ? 'heavy' : ''}`}>
+        <div className="banner-icon">
+          {overloaded ? <Activity size={25} /> : <ShieldCheck size={27} />}
+        </div>
+        <div className="banner-copy">
+          <span className="eyebrow">YOUR NEXT 14 DAYS</span>
+          <h2>
+            {data.deleted
+              ? 'A fresh start, whenever you’re ready.'
+              : overloaded
+                ? `${prettyDate(data.demoDate).split(',')[0]} is getting a little too full.`
+                : 'You’re doing a lot. Let’s keep it manageable.'}
+          </h2>
+          <p>
+            {overloaded} overloaded {overloaded === 1 ? 'day' : 'days'} · {busyDays} busy{' '}
+            {busyDays === 1 ? 'day' : 'days'}
+            {overloaded
+              ? ' · A few small changes can make a big difference.'
+              : ' · We’ll flag the pressure before it builds.'}
+          </p>
+        </div>
+        <VoiceButton />
+      </section>
+      <div className="stat-grid">
+        <div className="stat-card">
+          <span className="stat-icon amber">
+            <Activity size={19} />
+          </span>
+          <div>
+            <span>Needs a little attention</span>
+            <strong>
+              {overloaded + busyDays}
+              <small>days ahead</small>
+            </strong>
+          </div>
+          <span className="stat-tag">Next 14 days</span>
+        </div>
+        <div className="stat-card">
+          <span className="stat-icon green">
+            <Coffee size={19} />
+          </span>
+          <div>
+            <span>Recovery time protected</span>
+            <strong>
+              {protectedHours}
+              <small>hours</small>
+            </strong>
+          </div>
+          <span className="stat-tag">{protectedSlots ? 'Auto + Undo' : 'Room to recharge'}</span>
+        </div>
+        <Link href="/inbox" className="stat-card stat-link">
+          <span className="stat-icon blue">
+            <Inbox size={19} />
+          </span>
+          <div>
+            <span>Waiting for your say</span>
+            <strong>
+              {pending}
+              <small>{pending === 1 ? 'suggestion' : 'suggestions'}</small>
+            </strong>
+          </div>
+          <ChevronRight size={19} />
+        </Link>
+      </div>
+      <div className="dashboard-columns">
+        <div className="overview-main">
+          <section className="panel timeline-panel">
+            <div className="panel-heading">
+              <div>
+                <h2>
+                  Your workload outlook <span className="subtle-pill">14 days</span>
+                </h2>
+                <p>A score for your schedule, with a reason behind every point.</p>
+              </div>
+              <div className="demo-controls">
+                <button
+                  className="icon-button"
+                  title="Reset demo"
+                  aria-label="Reset demo"
+                  disabled={busy}
+                  onClick={() => {
+                    void mutate('/api/reset');
+                    setSelected(null);
+                  }}
+                >
+                  <RotateCcw size={17} />
+                </button>
+                <button
+                  className="button primary"
+                  disabled={busy || data.demoAdded || data.deleted}
+                  onClick={() => {
+                    setSelected(data.demoDate);
+                    void mutate('/api/items', { demo: true });
+                  }}
+                >
+                  <Plus size={16} />
+                  {data.demoAdded ? 'Demo load added' : 'Add demo load'}
+                </button>
+              </div>
+            </div>
+            <div className="legend">
+              <span>
+                <i className="green" />
+                Manageable <b>0–39</b>
+              </span>
+              <span>
+                <i className="amber" />
+                Busy <b>40–69</b>
+              </span>
+              <span>
+                <i className="red" />
+                Overloaded <b>70–100</b>
+              </span>
+            </div>
+            <Timeline
+              scores={data.scores}
+              selected={day.date}
+              onSelect={setSelected}
+              demoDate={data.demoDate}
+            />
+            <div className="timeline-caption">
+              <Sparkles size={14} />
+              <span>
+                {data.demoAdded
+                  ? 'New commitments detected. Your plan below can help make room.'
+                  : 'Try “Add demo load” to see how three new commitments change Thursday.'}
+              </span>
+              <span className="timezone-label">All times IST</span>
+            </div>
+          </section>
+          <section className="panel suggestions-panel">
+            <div className="panel-heading">
+              <div>
+                <span className="eyebrow">SMALL CHANGES, MORE SPACE</span>
+                <h2>Your lighter-week plan</h2>
+              </div>
+              <span className="subtle-pill">{suggestions.length} suggestions</span>
+            </div>
+            {projection && (
+              <div className="projection">
+                <span className="projection-icon">
+                  <TrendingDown size={21} />
+                </span>
+                <div>
+                  <strong>A little less on your plate.</strong>
+                  <p>If extensions are granted and the meeting move is accepted:</p>
+                </div>
+                <div className="projection-score">
+                  <span>{projection.before}</span>
+                  <ChevronRight size={20} />
+                  <b>{projection.after}</b>
+                </div>
+                <span className="projection-day">{prettyDate(day.date, true)}</span>
+              </div>
+            )}
+            {suggestions.length ? (
+              <div className="suggestions-list">
+                {suggestions.map((s) => (
+                  <SuggestionCard key={s.id} suggestion={s} />
+                ))}
+              </div>
+            ) : (
+              <div className="calm-empty">
+                <span>
+                  <CheckCheck size={27} />
+                </span>
+                <h3>A little breathing room.</h3>
+                <p>
+                  {data.deleted
+                    ? 'Reset the demo to restore sample data.'
+                    : 'No changes needed for this day. When the load builds, your suggestions will appear here.'}
+                </p>
+              </div>
+            )}
+            <div className="policy-footnote">
+              <ShieldCheck size={15} />
+              <span>
+                Recovery blocks are reversible. Every draft and meeting proposal waits for you.
+              </span>
+            </div>
+          </section>
+          {data.items
+            .filter((i) => i.flagged)
+            .map((i) => (
+              <InjectionBanner key={i.id} item={i} />
+            ))}
+        </div>
+        <aside className="day-panel panel" aria-label="Selected day details">
+          <div className="day-detail-heading">
+            <span className="eyebrow">A CLOSER LOOK</span>
+            <h2>{prettyDate(day.date)}</h2>
+            <div className="day-score-row">
+              <strong className={`large-score ${day.band}`}>
+                {day.score}
+                <small>/100</small>
+              </strong>
+              <ScoreBadge band={day.band} />
+            </div>
+          </div>
+          <div className="day-detail-section">
+            <h3>
+              Why this score <span>{day.reasons.length} reasons</span>
+            </h3>
+            <ReasonList reasons={day.reasons} />
+            <div className="score-total">
+              <span>Total workload score</span>
+              <strong>{day.score}</strong>
+            </div>
+          </div>
+          <div className="day-detail-section">
+            <h3>
+              On your plate <span>{items.length} items</span>
+            </h3>
+            <ul className="item-list">
+              {items.map((i) => {
+                const Icon =
+                  i.source === 'gmail'
+                    ? Mail
+                    : i.source === 'classroom'
+                      ? BookOpen
+                      : i.recovery
+                        ? Coffee
+                        : CalendarDays;
+                return (
+                  <li key={i.id}>
+                    <span className={`item-icon ${i.source}`}>
+                      <Icon size={15} />
+                    </span>
+                    <div>
+                      <strong>{i.title}</strong>
+                      <small>
+                        {i.recovery
+                          ? 'Protected recovery'
+                          : i.source === 'classroom'
+                            ? 'Classroom'
+                            : i.source === 'gmail'
+                              ? 'Gmail'
+                              : 'Calendar'}{' '}
+                        ·{' '}
+                        {new Intl.DateTimeFormat('en-IN', {
+                          timeZone: 'Asia/Kolkata',
+                          hour: 'numeric',
+                          minute: '2-digit',
+                        }).format(new Date(i.due || i.start!))}
+                        {i.movable ? ' · Flexible' : ''}
+                      </small>
+                    </div>
+                  </li>
+                );
+              })}
+              {!items.length && <li className="muted">No commitments scheduled.</li>}
+            </ul>
+          </div>
+          <div className="explain-note">
+            <BookOpen size={16} />
+            <p>
+              Scored from deadlines, prep time, scheduled hours, breaks and late nights.{' '}
+              <Link href="/settings">About your data</Link>
+            </p>
+          </div>
+        </aside>
+      </div>
+      <div className="dashboard-bottom">
+        <span>
+          <span className="tiny-shield">
+            <ShieldCheck size={15} />
+          </span>
+          Built to help you say “not right now.”
+        </span>
+        <span>{data.provider} · Sample data only · No API keys needed</span>
+      </div>
+    </div>
+  );
 }
