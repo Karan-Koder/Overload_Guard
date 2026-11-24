@@ -80,7 +80,8 @@ export function Timeline({
             key={d.date}
             onClick={() => onSelect(d.date)}
             aria-pressed={d.date === selected}
-            aria-label={`${prettyDate(d.date)}, ${d.score}, ${bandLabels[d.band]}`}
+            aria-label={`${prettyDate(d.date)}, ${Math.round(d.score)}, ${bandLabels[d.band]}${Number.isInteger(d.score) ? '' : ` (rounded from ${d.score})`}`}
+            title={`Exact workload score: ${d.score}/100`}
             className={`day-card ${d.band} ${d.date === selected ? 'selected' : ''}`}
           >
             <span className="day-name">
@@ -90,7 +91,7 @@ export function Timeline({
               }).format(new Date(`${d.date}T12:00:00+05:30`))}
             </span>
             <span className="day-number">{d.date.slice(-2)}</span>
-            <strong>{d.score}</strong>
+            <strong>{Math.round(d.score)}</strong>
             <span className="day-status">{bandLabels[d.band]}</span>
             <span className="day-bottom">
               {d.date === dateKey()

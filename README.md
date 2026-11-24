@@ -214,14 +214,21 @@ See `infra/README.md`. The engine and policy have no framework or provider depen
 
 ## Disclaimer
 
-Overload Guard tracks workload, not health. It does not diagnose anything. If you feel overwhelmed or unsafe, call Tele-MANAS [14416](tel:+9114416?oai_link_source=model_response_hotline) (free, 24×7) or talk to someone you trust.
+Overload Guard tracks workload, not health. It does not diagnose anything. If you feel overwhelmed or unsafe, call Tele-MANAS [14416](tel:14416) (free, 24×7) or talk to someone you trust.
 
 ## Team
 
-Overload Guard · [Karan-Koder](https://github.com/Karan-Koder) · wHACKiest 2026. Add additional team members before submission.
+Overload Guard · wHACKiest 2026
+
+| Member          | Name                   |
+| --------------- | ---------------------- |
+| Member 1 (Lead) | Shrish S Naik          |
+| Member 2        | Poornatejas C          |
+| Member 3        | Subhodh Suresh Kalawad |
+| Member 4        | Karan Koder            |
 
 ## Implementation references
 
 - [Next.js App Router installation](https://nextjs.org/docs/app/getting-started/installation)
 - [MCP TypeScript SDK v1 documentation](https://ts.sdk.modelcontextprotocol.io/)
-- [Tele-MANAS](https://telemanas.mohfw.gov.in/home?oai_link_source=model_response_hotline)
+- [Tele-MANAS](https://telemanas.mohfw.gov.in/home)

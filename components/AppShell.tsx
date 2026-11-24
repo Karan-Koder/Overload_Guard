@@ -145,8 +145,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <ShieldCheck size={15} />
           <span>
             Overload Guard tracks workload, not health. It does not diagnose anything. If you feel
-            overwhelmed or unsafe, call Tele-MANAS{' '}
-            <a href="tel:+9114416?oai_link_source=model_response_hotline">14416</a> (free, 24×7) or
+            overwhelmed or unsafe, call Tele-MANAS <a href="tel:14416">14416</a> (free, 24×7) or
             talk to someone you trust.
           </span>
           <span className="footer-prototype">Made for wHACKiest 2026</span>
