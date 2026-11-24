@@ -220,12 +220,12 @@ Overload Guard tracks workload, not health. It does not diagnose anything. If yo
 
 Overload Guard · wHACKiest 2026
 
-| Member          | Name                   |
-| --------------- | ---------------------- |
-| Member 1 (Lead) | Shrish S Naik          |
-| Member 2        | Poornatejas C          |
-| Member 3        | Subhodh Suresh Kalawad |
-| Member 4        | Karan Koder            |
+| Member          | Name                   | USN          |
+| --------------- | ---------------------- | ------------ |
+| Member 1 (Lead) | Shrish S Naik          | 1RV25CS173   |
+| Member 2        | Poornatejas C          | RVCE26BCS802 |
+| Member 3        | Subhodh Suresh Kalawad | 1RZ25CS177   |
+| Member 4        | Karan Koder            | 1RV25CS080   |
 
 ## Implementation references
 
